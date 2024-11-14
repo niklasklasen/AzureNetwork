@@ -62,6 +62,10 @@ param agwFrontendPorts array = [
 ]
 param agwEnableHttp2 bool = false
 
+ // Key Vault Parameters
+param kvEnablePurgeProtection bool = false
+param kvEnableRbacAuthorization bool = true
+
 // Variables
 var rgName = '${solutionName}-${regionShortName}-rg'
 var agwName = '${solutionName}-${regionShortName}-agw'
@@ -105,6 +109,9 @@ module modKeyVault 'br/public:avm/res/key-vault/vault:0.10.2' = {
   params: {
     name: kvName
     lock: lock
+    location: resResourceGroup.location
+    enablePurgeProtection: kvEnablePurgeProtection
+    enableRbacAuthorization: kvEnableRbacAuthorization
   }
 }
 
