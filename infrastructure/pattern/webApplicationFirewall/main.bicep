@@ -43,7 +43,6 @@ param wafManagedRuleSet object = {
 }
 
 // Application Gateway Parameters
-param agwManagedIdentities object
 param agwSku string = 'WAF_V2'
 param agwCapacity int = 2
 param agwFrontendPorts array = [
