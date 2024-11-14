@@ -1,6 +1,7 @@
 using 'main.bicep'
 
 // General Parameters
+param environmentType = 't'
 param solutionName = 'waf'
 param regionShortName = 'sec'
 // Resource Group Parameters 
@@ -9,7 +10,6 @@ param rgLocation = 'swedencentral'
 param vnetAddressPrefixes = [
   '10.0.1.0/24'
 ]
-param snetAddressPrefix = [
-  '10.0.1.0/25'
-]
+param snetAddressPrefix = '10.0.1.0/25'
+
 

@@ -8,6 +8,7 @@ targetScope = 'subscription'
 // Diagnostic Option
 
 // General Parameters
+param environmentType string
 param solutionName string
 param regionShortName string
 param lock object = {
@@ -22,7 +23,7 @@ param rgLocation string
 param vnetAddressPrefixes array
 param vnetDnsServers array = []
 param vnetDDoSProtectionId string = ''
-param snetAddressPrefix array
+param snetAddressPrefix string
 
 
 // Public IP Address Parameters
@@ -66,15 +67,15 @@ param kvEnablePurgeProtection bool = false
 param kvEnableRbacAuthorization bool = true
 
 // Variables
-var rgName = '${solutionName}-${regionShortName}-rg'
-var agwName = '${solutionName}-${regionShortName}-agw'
-var vnetName = '${solutionName}-${regionShortName}-vnet'
-var nsgName = '${solutionName}-${regionShortName}-snet-nsg'
-var pipName = '${solutionName}-${regionShortName}-pip'
-var wafName = '${solutionName}-${regionShortName}-waf'
-var miName = '${solutionName}-${regionShortName}-mi'
-var kvName = '${solutionName}-${regionShortName}-kv'
-var rtName = '${solutionName}-${regionShortName}-rt'
+var rgName = '${environmentType}-${solutionName}-${regionShortName}-rg'
+var agwName = '${environmentType}-${solutionName}-${regionShortName}-agw'
+var vnetName = '${environmentType}-${solutionName}-${regionShortName}-vnet'
+var nsgName = '${environmentType}-${solutionName}-${regionShortName}-snet-nsg'
+var pipName = '${environmentType}-${solutionName}-${regionShortName}-pip'
+var wafName = '${environmentType}-${solutionName}-${regionShortName}-waf'
+var miName = '${environmentType}-${solutionName}-${regionShortName}-mi'
+var kvName = '${environmentType}-${solutionName}-${regionShortName}-kv'
+var rtName = '${environmentType}-${solutionName}-${regionShortName}-rt'
 
 // Resources
 resource resResourceGroup 'Microsoft.Resources/resourceGroups@2024-07-01' = {
