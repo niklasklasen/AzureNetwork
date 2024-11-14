@@ -74,6 +74,7 @@ var pipName = '${solutionName}-${regionShortName}-pip'
 var wafName = '${solutionName}-${regionShortName}-waf'
 var miName = '${solutionName}-${regionShortName}-mi'
 var kvName = '${solutionName}-${regionShortName}-kv'
+var rtName = '${solutionName}-${regionShortName}-rt'
 
 // Resources
 resource resResourceGroup 'Microsoft.Resources/resourceGroups@2024-07-01' = {
@@ -91,7 +92,25 @@ module modNetworkSecurityGroup 'br/public:avm/res/network/network-security-group
   }
 }
 
-// MODULE ROUTE TABLE
+module modRouteTable 'br/public:avm/res/network/route-table:0.4.0' = {
+  scope: resourceGroup(resResourceGroup.name)
+  name: '${rtName}Deployment'
+  params: {
+    name: rtName
+    location: resResourceGroup.location
+    routes: [
+      {
+        name: 'default'
+        properties: {
+          addressPrefix: '0.0.0.0/0'
+          nextHopType: 'Internet'
+          hasBgpOverride: false
+        }
+      }
+    ]
+    lock: lock
+  }
+}
 
 module modManagedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.0' = {
   scope: resourceGroup(resResourceGroup.name)
@@ -128,7 +147,7 @@ module modVirtualNetwork 'br/public:avm/res/network/virtual-network:0.5.1' = {
         name: 'waf-snet'
         addressPrefix: snetAddressPrefix
         networkSecurityGroupResourceId: modNetworkSecurityGroup.outputs.resourceId
-        routeTableResourceId: 
+        routeTableResourceId: modRouteTable.outputs.resourceId
       }
     ]
     lock: lock
