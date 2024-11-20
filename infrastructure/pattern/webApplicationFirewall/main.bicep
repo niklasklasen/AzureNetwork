@@ -1,10 +1,5 @@
 // Web Application Firewall Pattern
 targetScope = 'subscription'
-// Resources //
-// Key Vault
-// MAnaged Identity
-// Route Table
-
 // Diagnostic Option
 
 // General Parameters
@@ -31,7 +26,7 @@ param snetAddressPrefix string
   'Static'
   'Dynamic'
 ])
-param pipAllocationMethod string = 'Dynamic'
+param pipAllocationMethod string = 'Static'
 
 // Web Application Firewall Policy Parameters
 param wafManagedRuleSet object = {
@@ -44,7 +39,7 @@ param wafManagedRuleSet object = {
 }
 
 // Application Gateway Parameters
-param agwSku string = 'WAF_V2'
+param agwSku string = 'WAF_v2'
 param agwCapacity int = 2
 param agwFrontendPorts array = [
   {
@@ -57,6 +52,21 @@ param agwFrontendPorts array = [
     name: 'port80'
     properties: {
       port: 80
+    }
+  }
+]
+param agwBackendPools array = [
+  {
+    name: 'tempBackendPool'
+  }
+]
+param agwBackendHttpSettingsCollection array = [
+  {
+    name: 'tempBackendSetting'
+    properties: {
+      cookieBasedAffinity: 'Disabled'
+      port: 80
+      protocol: 'Http'
     }
   }
 ]
@@ -195,11 +205,13 @@ module modApplicationGateway 'br/public:avm/res/network/application-gateway:0.5.
         name: 'apw-ip-configuration'
         properties: {
           subnet: {
-            id: modVirtualNetwork.outputs.subnetResourceIds
+            id: modVirtualNetwork.outputs.subnetResourceIds[0]
           }
         }
       }
     ]
+    backendAddressPools: agwBackendPools
+    backendHttpSettingsCollection: agwBackendHttpSettingsCollection
     frontendIPConfigurations: [
       {
         name: 'public'
@@ -210,10 +222,9 @@ module modApplicationGateway 'br/public:avm/res/network/application-gateway:0.5.
         }
       }
     ]
-    frontendPorts: agwFrontendPorts 
+    frontendPorts: agwFrontendPorts
     enableHttp2: agwEnableHttp2
     firewallPolicyResourceId: modWebApplicationFirewallPolicy.outputs.resourceId
     lock: lock
-  
   }
 }
