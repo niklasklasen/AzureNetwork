@@ -8,6 +8,18 @@ param parAzureFirewallManagementSubnetNSGName string
 param parGatewaySubnetRTName string 
 param parAzureFirewallSubnetRTName string
 param parAzureFirewallManagementSubnetRTName string
+param parAzureFirewallName string
+param parAzureFirewallPolicyName string
+@allowed(
+  [
+    'Basic'
+    'Standard'
+    'Premium'
+  ]
+)
+param parAzureFirewallSku string = 'Standard'
+param parAzureFirewallPIPName string
+
 // Resources
 
 resource resGatewaySubnetNSG 'Microsoft.Network/networkSecurityGroups@2024-03-01' = {
@@ -105,3 +117,54 @@ resource resAzureFirewallManagementSubnet 'Microsoft.Network/virtualNetworks/sub
     }
   }
 }
+
+resource resPublicIPAddress 'Microsoft.Network/publicIPAddresses@2024-03-01' = {
+  name: parAzureFirewallPIPName
+  location: resourceGroup().location
+  
+}
+
+resource resAzureFirewallPolicy 'Microsoft.Network/firewallPolicies/firewallPolicyDrafts@2024-03-01' = {
+  name: parAzureFirewallPolicyName
+  location: resourceGroup().location
+  properties: {
+    dnsSettings: {
+      enableProxy: true
+    }
+    }
+  }
+}
+
+resource resAzureFirewall 'Microsoft.Network/azureFirewalls@2024-03-01' = {
+  name: parAzureFirewallName
+  location: resourceGroup().location
+  zones: [
+    '1'
+    '2'
+    '3'
+  ]
+  properties: {
+    firewallPolicy: {
+      id: resAzureFirewallPolicy.id
+    }
+    sku: {
+      name: 'AZFW_VNet'
+      tier: parAzureFirewallSku
+    }
+    ipConfigurations: [
+      {
+        name: 'AzureFirewallIPConfiguration'
+        properties:{
+          subnet: {
+            id: resAzureFirewallSubnet
+          }
+          publicIPAddress: {
+            id: 
+          }
+        }
+      }
+    ]
+  }
+}
+
+output outAzureFirewall string = resAzureFirewall.id

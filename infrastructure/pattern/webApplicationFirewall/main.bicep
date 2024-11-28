@@ -70,6 +70,7 @@ param agwBackendHttpSettingsCollection array = [
     }
   }
 ]
+
 param agwEnableHttp2 bool = false
 
  // Key Vault Parameters
@@ -212,6 +213,22 @@ module modApplicationGateway 'br/public:avm/res/network/application-gateway:0.5.
     ]
     backendAddressPools: agwBackendPools
     backendHttpSettingsCollection: agwBackendHttpSettingsCollection
+    httpListeners: [
+      {
+        name: 'tempHttpListener'
+        properties: {
+          frontendIPConfiguration: {
+            id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', agwName, 'public')
+          }
+          frontendPort: {
+            id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', agwName, 'port80')
+            
+          }
+          hostName: 'www.contoso.com'
+          protocol: 'Http'
+        }
+      }
+    ]
     frontendIPConfigurations: [
       {
         name: 'public'
@@ -223,6 +240,24 @@ module modApplicationGateway 'br/public:avm/res/network/application-gateway:0.5.
       }
     ]
     frontendPorts: agwFrontendPorts
+    requestRoutingRules: [
+      {
+        name: 'tempRoutingRule'
+        properties: {
+          ruleType: 'Basic'
+          priority: 10
+          httpListener: {
+            id: resourceId('Microsoft.Network/applicationGateways/httpListeners', agwName, 'tempHttpListener')
+          }
+          backendAddressPool: {
+            id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', agwName, 'tempBackendPool')
+          }
+          backendHttpSettings: {
+            id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', agwName, 'tempBackendSetting')
+          }
+        }
+      }
+    ]
     enableHttp2: agwEnableHttp2
     firewallPolicyResourceId: modWebApplicationFirewallPolicy.outputs.resourceId
     lock: lock
