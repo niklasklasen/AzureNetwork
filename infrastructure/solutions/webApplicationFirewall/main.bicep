@@ -11,6 +11,8 @@ param lock object = {
   name: 'DeleteLock-agw'
 }
 
+param subscriptionId string = '178eb97e-2a58-4e6a-81a3-3ad481221fe0'
+
 // Resource Group Parameters 
 param rgLocation string
 
@@ -28,50 +30,7 @@ param snetAddressPrefix string
 ])
 param pipAllocationMethod string = 'Static'
 
-// Web Application Firewall Policy Parameters
-param wafManagedRuleSet object = {
-  managedRuleSets: [
-    {
-      ruleSetType: 'OWASP'
-      ruleSetVersion: '3.2'
-    }
-  ]
-}
-
-// Application Gateway Parameters
-param agwSku string = 'WAF_v2'
-param agwCapacity int = 2
-param agwFrontendPorts array = [
-  {
-    name: 'port443'
-    properties: {
-      port: 443
-    }
-  }
-  {
-    name: 'port80'
-    properties: {
-      port: 80
-    }
-  }
-]
-param agwBackendPools array = [
-  {
-    name: 'tempBackendPool'
-  }
-]
-param agwBackendHttpSettingsCollection array = [
-  {
-    name: 'tempBackendSetting'
-    properties: {
-      cookieBasedAffinity: 'Disabled'
-      port: 80
-      protocol: 'Http'
-    }
-  }
-]
-
-param agwEnableHttp2 bool = false
+param parWebApplicationFirewallRules object
 
  // Key Vault Parameters
 param kvEnablePurgeProtection bool = false
@@ -100,6 +59,40 @@ module modNetworkSecurityGroup 'br/public:avm/res/network/network-security-group
   params: {
     name: nsgName
     location: resResourceGroup.location
+    securityRules: [
+      {
+        name: 'allowInetnerAccess'
+        properties: {
+          access: 'Allow'
+          destinationAddressPrefix: '*'
+          destinationPortRanges: [
+            '80'
+            '443'
+          ]
+          direction: 'Inbound'
+          priority: 110
+          protocol: 'Tcp'
+          sourceAddressPrefix: 'Internet'
+          sourcePortRange: '*'
+        }
+      }
+      {
+        name: 'allowGatewayManager'
+        properties: {
+          access: 'Allow'
+          description: 'Allow traffic from GatewayManager. This port range is required for Azure infrastructure communication.'
+          destinationAddressPrefix: '*'
+          destinationPortRanges: [
+            '65200-65535'
+          ]
+          direction: 'Inbound'
+          priority: 3900
+          protocol: '*'
+          sourceAddressPrefix: 'GatewayManager'
+          sourcePortRange: '*'
+        }
+      }
+    ]
     lock: lock
   }
 }
@@ -120,15 +113,6 @@ module modRouteTable 'br/public:avm/res/network/route-table:0.4.0' = {
         }
       }
     ]
-    lock: lock
-  }
-}
-
-module modManagedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.0' = {
-  scope: resourceGroup(resResourceGroup.name)
-  name: '${miName}Deployment'
-  params: {
-    name: miName
     lock: lock
   }
 }
@@ -178,88 +162,18 @@ module modPublicIPAddress 'br/public:avm/res/network/public-ip-address:0.7.0' = 
   }
 }
 
-module modWebApplicationFirewallPolicy 'br/public:avm/res/network/application-gateway-web-application-firewall-policy:0.1.1' = {
+module modWebApplicationFirewall '../../_modules/pattern/waf-spoke/waf.bicep' = {
   scope: resourceGroup(resResourceGroup.name)
   name: '${wafName}Deployment'
   params: {
-    name: wafName
-    location: resResourceGroup.location
-    managedRules: wafManagedRuleSet
-  }
-}
-
-module modApplicationGateway 'br/public:avm/res/network/application-gateway:0.5.1' = {
-  name: '${agwName}Deployment'
-  scope: resourceGroup(resResourceGroup.name)
-  params: {
-    name: agwName
-    location: resResourceGroup.location
-    managedIdentities: {
-      userAssignedResourceIds: [
-        modManagedIdentity.outputs.resourceId
-      ]
-    }
-    sku: agwSku
-    capacity: agwCapacity
-    gatewayIPConfigurations: [
-      {
-        name: 'apw-ip-configuration'
-        properties: {
-          subnet: {
-            id: modVirtualNetwork.outputs.subnetResourceIds[0]
-          }
-        }
-      }
-    ]
-    backendAddressPools: agwBackendPools
-    backendHttpSettingsCollection: agwBackendHttpSettingsCollection
-    httpListeners: [
-      {
-        name: 'tempHttpListener'
-        properties: {
-          frontendIPConfiguration: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', agwName, 'public')
-          }
-          frontendPort: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', agwName, 'port80')
-            
-          }
-          hostName: 'www.contoso.com'
-          protocol: 'Http'
-        }
-      }
-    ]
-    frontendIPConfigurations: [
-      {
-        name: 'public'
-        properties: {
-          publicIPAddress: {
-            id: modPublicIPAddress.outputs.resourceId
-          }
-        }
-      }
-    ]
-    frontendPorts: agwFrontendPorts
-    requestRoutingRules: [
-      {
-        name: 'tempRoutingRule'
-        properties: {
-          ruleType: 'Basic'
-          priority: 10
-          httpListener: {
-            id: resourceId('Microsoft.Network/applicationGateways/httpListeners', agwName, 'tempHttpListener')
-          }
-          backendAddressPool: {
-            id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', agwName, 'tempBackendPool')
-          }
-          backendHttpSettings: {
-            id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', agwName, 'tempBackendSetting')
-          }
-        }
-      }
-    ]
-    enableHttp2: agwEnableHttp2
-    firewallPolicyResourceId: modWebApplicationFirewallPolicy.outputs.resourceId
-    lock: lock
+    parLocation: resResourceGroup.location
+    parManagedIdentityName: miName
+    parPublicIpId: modPublicIPAddress.outputs.resourceId
+    parResourceGroupName: rgName
+    parSubscriptionId: subscriptionId
+    parVirtualNetworkSubnetId: modVirtualNetwork.outputs.subnetResourceIds[0]
+    parWebApplicationFirewallName: agwName
+    parWebApplicationFirewallPolicyName: wafName
+    parWebApplicationFirewallRules: parWebApplicationFirewallRules
   }
 }
