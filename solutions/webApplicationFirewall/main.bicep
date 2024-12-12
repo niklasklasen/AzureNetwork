@@ -43,7 +43,7 @@ param parApplicationGatewayHttpListeners array = [
     name: 'tempHttpListener'
     properties: {
       frontendIPConfiguration: {
-        id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', parApplicationGatewayName, 'frontendIPConfig')
+        id: resourceId('Network/applicationGateways/frontendIPConfigurations', parApplicationGatewayName, 'frontendIPConfig')
       }
       frontendPort: {
         id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', parApplicationGatewayName, 'frontendPort')
@@ -53,6 +53,7 @@ param parApplicationGatewayHttpListeners array = [
     }
   }
 ]
+
 param parApplicationGatewayRequestRoutingrules array = [
   {
     name: 'tempRequestRoutingRule'
