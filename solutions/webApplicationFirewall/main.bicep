@@ -55,7 +55,7 @@ param parApplicationGatewayHttpListeners array = [
 ]
 param parApplicationGatewayRequestRoutingrules array = [
   {
-    name: 'requestRoutingRule1'
+    name: 'tempRequestRoutingRule'
     properties: {
       backendAddressPool: {
         id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', parApplicationGatewayName, 'tempBackendAddressPool')
