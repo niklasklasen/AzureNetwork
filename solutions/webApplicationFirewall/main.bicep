@@ -85,7 +85,10 @@ module modResourceGroup 'br/public:avm/res/resources/resource-group:0.4.0' = {
 }
 
 module modKeyVault 'br/public:avm/res/key-vault/vault:0.11.0' = {
-  scope: resourceGroup(modResourceGroup.name)
+  scope: resourceGroup(parResourceGroupName)
+  dependsOn: [
+    modResourceGroup
+  ]
   name: 'keyVaultDeployment'
   params: {
     name: parKeyVaultName
@@ -93,22 +96,35 @@ module modKeyVault 'br/public:avm/res/key-vault/vault:0.11.0' = {
 }
 
 module modManagedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.0' = {
-  scope: resourceGroup(modResourceGroup.name)
+  scope: resourceGroup(parResourceGroupName)
+  dependsOn: [
+    modResourceGroup
+  ]
   name: 'managedIdentityDeployment'
   params: {
     name: parManagedIdentityName
-    roleAssignments: [
-      {
-        principalId: '${subscription().id}/resourceGroups/${parResourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${parManagedIdentityName}'
-        roleDefinitionIdOrName: 'db79e9a7-68ee-4b58-9aeb-b90e7c24fcba'
-      }
-    ]
+  }
+}
+
+module modRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:0.1.1' = {
+  scope: resourceGroup(parResourceGroupName)
+  dependsOn: [
+    modManagedIdentity
+  ]
+  name: 'roleAssignmentDeployment'
+  params: {
+    principalId: modManagedIdentity.outputs.principalId
+    resourceId: modKeyVault.outputs.resourceId
+    roleDefinitionId: 'db79e9a7-68ee-4b58-9aeb-b90e7c24fcba'
   }
 }
 
 module modNetworkSecurityGroup 'br/public:avm/res/network/network-security-group:0.5.0' = {
   name: 'networkSecurityGroupDeployment'
-  scope: resourceGroup(modResourceGroup.name)
+  scope: resourceGroup(parResourceGroupName)
+  dependsOn: [
+    modResourceGroup
+  ]
   params: {
     name: 'waf-snet-nsg'
     securityRules: [
@@ -176,7 +192,10 @@ module modNetworkSecurityGroup 'br/public:avm/res/network/network-security-group
 }
 
 module modRouteTable 'br/public:avm/res/network/route-table:0.4.0' = {
-  scope: resourceGroup(modResourceGroup.name)
+  scope: resourceGroup(parResourceGroupName)
+  dependsOn: [
+    modResourceGroup
+  ]
   name: 'routeTableDeployment'
   params: {
     name: parRouteTableName
@@ -195,7 +214,10 @@ module modRouteTable 'br/public:avm/res/network/route-table:0.4.0' = {
 
 module modVirtualNetwork 'br/public:avm/res/network/virtual-network:0.5.1' = {
   name: 'virtualNetworkDeployment'
-  scope: resourceGroup(modResourceGroup.name)
+  scope: resourceGroup(parResourceGroupName)
+  dependsOn: [
+    modResourceGroup
+  ]
   params: {
     name: parVnetName
     addressPrefixes: parVnetAddressPrefix
@@ -212,7 +234,10 @@ module modVirtualNetwork 'br/public:avm/res/network/virtual-network:0.5.1' = {
 }
 
 module modPublicIpAddress 'br/public:avm/res/network/public-ip-address:0.7.0' = {
-  scope: resourceGroup(modResourceGroup.name)
+  scope: resourceGroup(parResourceGroupName)
+  dependsOn: [
+    modResourceGroup
+  ]
   name: 'publicIpAddressDeployment'
   params: {
     name: parPublicIpAddressName
@@ -220,7 +245,10 @@ module modPublicIpAddress 'br/public:avm/res/network/public-ip-address:0.7.0' = 
 }
 
 module modWebApplicationFirewallPolicy 'br/public:avm/res/network/application-gateway-web-application-firewall-policy:0.1.1' = {
-  scope: resourceGroup(modResourceGroup.name)
+  scope: resourceGroup(parResourceGroupName)
+  dependsOn: [
+    modResourceGroup
+  ]
   name: 'webApplicationFirewallPolicyDeployment'
   params: {
     name: parWebApplicationFirewallPolicyName
@@ -232,7 +260,10 @@ module modWebApplicationFirewallPolicy 'br/public:avm/res/network/application-ga
 
 module modApplicationGateway 'br/public:avm/res/network/application-gateway:0.5.1' = {
   name: 'applicationGatewayDeployment'
-  scope: resourceGroup(modResourceGroup.name)
+  scope: resourceGroup(parResourceGroupName)
+  dependsOn: [
+    modResourceGroup
+  ]
   params: {
     name: parApplicationGatewayName
     managedIdentities: {
