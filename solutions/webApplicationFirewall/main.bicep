@@ -43,10 +43,10 @@ param parApplicationGatewayHttpListeners array = [
     name: 'tempHttpListener'
     properties: {
       frontendIPConfiguration: {
-        id: resourceId('Network/applicationGateways/frontendIPConfigurations', parApplicationGatewayName, 'frontendIPConfig')
+        id: '${subscription().id}/resourceGroups/${parResourceGroupName}/providers/Microsoft.Network/applicationGateways/${parApplicationGatewayName}/frontendIPConfigurations/frontendIPConfig'
       }
       frontendPort: {
-        id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', parApplicationGatewayName, 'frontendPort')
+        id: '${subscription().id}/resourceGroups/${parResourceGroupName}/providers/Microsoft.Network/applicationGateways/${parApplicationGatewayName}/frontendPorts/frontendPort'
       }
       hostName: 'temp.demo'
       protocol: 'Http'
@@ -59,13 +59,13 @@ param parApplicationGatewayRequestRoutingrules array = [
     name: 'tempRequestRoutingRule'
     properties: {
       backendAddressPool: {
-        id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', parApplicationGatewayName, 'tempBackendAddressPool')
+        id: '${subscription().id}/resourceGroups/${parResourceGroupName}/providers/Microsoft.Network/applicationGateways/${parApplicationGatewayName}/backendAddressPools/tempBackendAddressPool'
       }
       backendHttpSettings: {
-        id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', parApplicationGatewayName, 'tempBackendHttpSettings')
+        id: '${subscription().id}/resourceGroups/${parResourceGroupName}/providers/Microsoft.Network/applicationGateways/${parApplicationGatewayName}/backendHttpSettingsCollection/tempBackendHttpSettings'
       }
       httpListener: {
-        id: resourceId('Microsoft.Network/applicationGateways/httpListeners', parApplicationGatewayName, 'tempHttpListener')
+        id: '${subscription().id}/resourceGroups/${parResourceGroupName}/providers/Microsoft.Network/applicationGateways/${parApplicationGatewayName}/httpListeners/tempHttpListener'
       }
       priority: 100
       ruleType: 'Basic'
@@ -117,6 +117,20 @@ module modNetworkSecurityGroup 'br/public:avm/res/network/network-security-group
           priority: 110
           protocol: 'Tcp'
           sourceAddressPrefix: 'Internet'
+          sourcePortRange: '*'
+        }
+      }
+      {
+        name: 'AllowAzureLoadBalancer'
+        properties: {
+          access: 'Allow'
+          description: 'Allow traffic from AzureLoadBalancer.'
+          destinationAddressPrefix: '*'
+          destinationPortRange: '*'
+          direction: 'Inbound'
+          priority: 3910
+          protocol: '*'
+          sourceAddressPrefix: 'AzureLoadBalancer'
           sourcePortRange: '*'
         }
       }
