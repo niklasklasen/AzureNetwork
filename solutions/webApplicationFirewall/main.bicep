@@ -3,6 +3,8 @@ targetScope = 'subscription'
 // Parameters
 param parLocation string
 param parResourceGroupName string
+param parKeyVaultName string
+param parManagedIdentityName string
 param parRouteTableName string
 param parVnetName string
 param parVnetAddressPrefix array
@@ -79,6 +81,28 @@ module modResourceGroup 'br/public:avm/res/resources/resource-group:0.4.0' = {
   params: {
     name: parResourceGroupName
     location: parLocation
+  }
+}
+
+module modKeyVault 'br/public:avm/res/key-vault/vault:0.11.0' = {
+  scope: resourceGroup(modResourceGroup.name)
+  name: 'keyVaultDeployment'
+  params: {
+    name: parKeyVaultName
+  }
+}
+
+module modManagedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.0' = {
+  scope: resourceGroup(modResourceGroup.name)
+  name: 'managedIdentityDeployment'
+  params: {
+    name: parManagedIdentityName
+    roleAssignments: [
+      {
+        principalId: '${subscription().id}/resourceGroups/${parResourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${parManagedIdentityName}'
+        roleDefinitionIdOrName: 'db79e9a7-68ee-4b58-9aeb-b90e7c24fcba'
+      }
+    ]
   }
 }
 
