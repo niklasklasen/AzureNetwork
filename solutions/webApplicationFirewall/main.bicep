@@ -4,6 +4,7 @@ targetScope = 'subscription'
 param parLocation string
 param parResourceGroupName string
 param parKeyVaultName string
+param parEnablePurgeProtection bool
 param parManagedIdentityName string
 param parRouteTableName string
 param parVnetName string
@@ -84,17 +85,6 @@ module modResourceGroup 'br/public:avm/res/resources/resource-group:0.4.0' = {
   }
 }
 
-module modKeyVault 'br/public:avm/res/key-vault/vault:0.11.0' = {
-  scope: resourceGroup(parResourceGroupName)
-  dependsOn: [
-    modResourceGroup
-  ]
-  name: 'keyVaultDeployment'
-  params: {
-    name: parKeyVaultName
-  }
-}
-
 module modManagedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.0' = {
   scope: resourceGroup(parResourceGroupName)
   dependsOn: [
@@ -103,6 +93,20 @@ module modManagedIdentity 'br/public:avm/res/managed-identity/user-assigned-iden
   name: 'managedIdentityDeployment'
   params: {
     name: parManagedIdentityName
+  }
+}
+
+module modKeyVault 'br/public:avm/res/key-vault/vault:0.11.0' = {
+  scope: resourceGroup(parResourceGroupName)
+  dependsOn: [
+    modResourceGroup
+    modManagedIdentity
+  ]
+  name: 'keyVaultDeployment'
+  params: {
+    name: parKeyVaultName
+    enablePurgeProtection: parEnablePurgeProtection
+    enableRbacAuthorization: true
   }
 }
 

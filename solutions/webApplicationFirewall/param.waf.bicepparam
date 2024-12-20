@@ -2,7 +2,8 @@ using 'main.bicep'
 
 param parLocation = 'swedencentral'
 param parResourceGroupName = 'p-waf-rg'
-param parKeyVaultName = 'p-waf-kv'
+param parKeyVaultName = 'p-waf-kv-03'
+param parEnablePurgeProtection = false
 param parManagedIdentityName = 'p-waf-mi'
 param parRouteTableName = 'p-waf-rt'
 param parVnetName = 'p-waf-vnet'
