@@ -4,6 +4,7 @@ targetScope = 'subscription'
 param parLocation string
 param parResourceGroupName string
 param parVnetName string
+param parVnetAddressPrefix array
 
 // Resources
 module modResourceGroup 'br/public:avm/res/resources/resource-group:0.4.0' = {
@@ -48,7 +49,6 @@ module modVirtualNetwork 'br/public:avm/res/network/virtual-network:0.5.1' = {
         name: 'p-appService-snet'
         addressPrefixes: parVnetAddressPrefix
         networkSecurityGroupResourceId: modNetworkSecurityGroup.outputs.resourceId
-        routeTableResourceId: modRouteTable.outputs.resourceId
       }
     ]
     
