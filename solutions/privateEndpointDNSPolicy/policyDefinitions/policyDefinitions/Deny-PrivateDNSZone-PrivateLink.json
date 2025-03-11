@@ -1,0 +1,33 @@
+{
+  "name": "Deny-PrivateDNSZone-PrivateLink",
+  "type": "Microsoft.Authorization/policyDefinitions",
+  "apiVersion": "2021-06-01",
+  "scope": null,
+  "properties": {
+    "policyType": "Custom",
+    "metadata": {
+      "category": "Networking"
+    },
+    "description": "This policy restricts creation of private DNS zones with the `privatelink` prefix",
+    "displayName": "Deny-PrivateDNSZone-PrivateLink",
+    "mode": "All",
+    "parameters": null,
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/privateDnsZones"
+          },
+          {
+            "field": "name",
+            "contains": "privatelink."
+          }
+        ]
+      },
+      "then": {
+        "effect": "Deny"
+      }
+    }
+  }
+}
