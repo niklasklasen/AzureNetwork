@@ -13,8 +13,12 @@ param parPublicIpAddressName string
 param parWebApplicationFirewallPolicyName string
 param parWebApplicationFirewallManagedRuleSets array = [
   {
-    ruleSetType: 'OWASP'
-    ruleSetVersion: '3.2'
+    ruleSetType: 'Microsoft_DefaultRuleSet'
+    ruleSetVersion: '2.1'
+  }
+  {
+    ruleSetType: 'Microsoft_BotManagerRuleSet'
+    ruleSetVersion: '1.1'
   }
 ]
 param parApplicationGatewayName string
