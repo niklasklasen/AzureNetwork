@@ -11,6 +11,7 @@ param parVnetName string
 param parVnetAddressPrefix array
 param parPublicIpAddressName string
 param parWebApplicationFirewallPolicyName string
+param parNsgName string
 param parWebApplicationFirewallManagedRuleSets array = [
   {
     ruleSetType: 'Microsoft_DefaultRuleSet'
@@ -134,7 +135,7 @@ module modNetworkSecurityGroup 'br/public:avm/res/network/network-security-group
     modResourceGroup
   ]
   params: {
-    name: 'waf-snet-nsg'
+    name: parNsgName
     securityRules: [
       {
         name: 'default-deny-all'
